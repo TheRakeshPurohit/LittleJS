@@ -85,13 +85,9 @@ function tile(pos=vec2(), size=tileSizeDefault, textureIndex=0)
     if (typeof pos === 'number')
     {
         const textureInfo = textureInfos[textureIndex];
-        if (textureInfo)
-        {
-            const cols = textureInfo.size.x / size.x |0;
-            pos = vec2((pos%cols)*size.x, (pos/cols|0)*size.y);
-        }
-        else
-            pos = vec2();
+        ASSERT(textureInfo, 'Texture not loaded');
+        const cols = textureInfo.size.x / size.x |0;
+        pos = vec2((pos%cols)*size.x, (pos/cols|0)*size.y);
     }
 
     // return a tile info object
@@ -118,12 +114,22 @@ class TileInfo
         this.textureIndex = textureIndex;
     }
 
-    /** Returns an offset copy of this tile, useful for animation
+    /** Returns a copy of this tile offset by a vector
     *  @param {Vector2} offset - Offset to apply in pixels
     *  @return {TileInfo}
     */
     offset(offset)
     { return new TileInfo(this.pos.add(offset), this.size, this.textureIndex); }
+
+    /** Returns a copy of this tile offset by a number of animation frames
+    *  @param {Number} frame - Offset to apply in animation frames
+    *  @return {TileInfo}
+    */
+    frame(frame)
+    {
+        ASSERT(typeof frame == 'number');
+        return this.offset(vec2(frame*this.size.x, 0));
+    }
 
     /** Returns the texture info for this tile
     *  @return {TextureInfo}
@@ -273,21 +279,6 @@ function drawTile(pos, size=vec2(1), tileInfo, color=new Color,
 function drawRect(pos, size, color, angle, useWebGL, screenSpace, context)
 { 
     drawTile(pos, size, undefined, color, angle, false, undefined, useWebGL, screenSpace, context); 
-}
-
-/** Draw colored polygon using passed in points
- *  @param {Array}   points - Array of Vector2 points
- *  @param {Color}   [color=(1,1,1,1)]
- *  @param {Boolean} [screenSpace=false]
- *  @param {CanvasRenderingContext2D} [context=mainContext]
- *  @memberof Draw */
-function drawPoly(points, color=new Color, screenSpace, context=mainContext)
-{
-    context.fillStyle = color.toString();
-    context.beginPath();
-    for (const point of screenSpace ? points : points.map(worldToScreen))
-        context.lineTo(point.x, point.y);
-    context.fill();
 }
 
 /** Draw colored line between two points

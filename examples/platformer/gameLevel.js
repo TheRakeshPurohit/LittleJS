@@ -8,12 +8,12 @@
 
 'use strict';
 
-const tileType_ladder      = -1;
-const tileType_empty       = 0;
-const tileType_solid       = 1;
-const tileType_breakable   = 2;
+const tileType_ladder    = -1;
+const tileType_empty     = 0;
+const tileType_solid     = 1;
+const tileType_breakable = 2;
 
-let player, playerStartPos, tileData, tileLayers, foregroundLayerIndex;
+let player, playerStartPos, tileData, tileLayers, foregroundLayerIndex, sky;
 let levelSize, levelColor, levelBackgroundColor, levelOutlineColor, warmup;
 
 const setTileData = (pos, layer, data)=>
@@ -27,9 +27,14 @@ function buildLevel()
     levelColor = randColor(hsl(0,0,.2), hsl(0,0,.8));
     levelBackgroundColor = levelColor.mutate().scale(.4,1);
     levelOutlineColor = levelColor.mutate().add(hsl(0,0,.4)).clamp();
-
     loadLevel();
-    initBackground();
+
+    // create sky object with gradient and stars
+    sky = new Sky;
+
+    // create parallax layers
+    for (let i=3; i--;)
+        new ParallaxLayer(i);
     
     // apply decoration to all level tiles
     const pos = vec2();
@@ -58,6 +63,19 @@ function loadLevel()
     initTileCollision(levelSize);
     engineObjectsDestroy();
 
+    // create table for tiles in the level tilemap
+    const tileLookup =
+    {
+        circle: 1,
+        ground: 2,
+        ladder: 4,
+        metal:  5,
+        player: 17,
+        crate:  18,
+        enemy:  19,
+        coin:   20,
+    }
+
     // set all level data tiles
     tileData = [];
     tileLayers = [];
@@ -78,19 +96,18 @@ function loadLevel()
             const pos = vec2(x,levelSize.y-1-y);
             const tile = layerData[y*levelSize.x+x];
 
-            if (tile >= 17 && tile <= 20)
+            if (tile >= tileLookup.player)
             {
                 // create object instead of tile
                 const objectPos = pos.add(vec2(.5));
-                if (tile == 17)
+                if (tile == tileLookup.player)
                     playerStartPos = objectPos;
-                if (tile == 18)
+                if (tile == tileLookup.crate)
                     new Crate(objectPos);
-                if (tile == 19)
+                if (tile == tileLookup.enemy)
                     new Enemy(objectPos);
-                if (tile == 20)
+                if (tile == tileLookup.coin)
                     new Coin(objectPos);
-                setTileData(pos, layer, 0);
                 continue;
             }
 
@@ -101,9 +118,9 @@ function loadLevel()
             let tileType = tileType_empty;
             if (tile > 0)
                 tileType = tileType_breakable;
-            if (tile == 4)
+            if (tile == tileLookup.ladder)
                 tileType = tileType_ladder;
-            if (tile == 5)
+            if (tile == tileLookup.metal)
                 tileType = tileType_solid;
             if (tileType)
             {
