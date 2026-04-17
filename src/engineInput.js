@@ -634,7 +634,13 @@ function inputUpdate()
         }
 
         // return if gamepads are disabled or not supported
-        if (!gamepadsEnable || !navigator || !navigator.getGamepads) return;
+        try {
+            // protect against getGamepads disallowed security error 
+            if (!gamepadsEnable || !navigator?.getGamepads)
+                return;
+        } catch(e) {
+            return;
+        }
 
         // only poll gamepads when focused or in debug mode
         if (!debug && !document.hasFocus()) return;
