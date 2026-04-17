@@ -327,7 +327,7 @@ function lineTest(posStart, posEnd, testFunction, normal)
     // get ray direction and length
     const dx = posEnd.x - posStart.x;
     const dy = posEnd.y - posStart.y;
-    const totalLength = hypot(dx, dy);
+    const totalLength = (dx*dx + dy*dy)**.5;
     if (!totalLength) return;
 
     // current integer cell we are in
