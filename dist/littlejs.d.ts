@@ -377,6 +377,12 @@ declare module "littlejsengine" {
      *  @default
      *  @memberof Settings */
     export let tilesPixelated: boolean;
+    /** Scale factor applied to the canvas backing store for native-resolution rendering.
+     *  Pass 1 for no scaling, a number for an explicit ratio, or undefined to track devicePixelRatio each frame.
+     *  @type {number|undefined}
+     *  @default
+     *  @memberof Settings */
+    export let canvasPixelRatio: number | undefined;
     /** Default font used for text rendering
      *  @type {string}
      *  @default
@@ -592,6 +598,11 @@ declare module "littlejsengine" {
      *  @param {boolean} pixelated
      *  @memberof Settings */
     export function setTilesPixelated(pixelated: boolean): void;
+    /** Set the canvas pixel ratio.
+     *  Pass a number for an explicit ratio, or call with no argument to track devicePixelRatio each frame.
+     *  @param {number} [pixelRatio]
+     *  @memberof Settings */
+    export function setCanvasPixelRatio(pixelRatio?: number): void;
     /** Set default font used for text rendering
      *  @param {string} font
      *  @memberof Settings */
