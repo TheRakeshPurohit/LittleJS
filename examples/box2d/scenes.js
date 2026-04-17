@@ -184,4 +184,11 @@ export function loadScene(_scene)
         for (let i=3;i--;)
             new GameObjects.SoftBodyObject(vec2(20, 3+i*7), vec2(6-i), vec2(9-i), LJS.randColor());
     }
+    if (scene == 11)
+    {
+        sceneName = 'Ragdolls';
+        new GameObjects.RagdollObject(vec2(20,5));
+        new GameObjects.RagdollObject(vec2(10,8), 2);
+        GameObjects.spawnPyramid(vec2(30,0), 6);
+    }
 }

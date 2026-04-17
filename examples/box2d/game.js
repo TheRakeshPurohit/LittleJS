@@ -24,7 +24,7 @@ LJS.setTilesPixelated(false);
 ///////////////////////////////////////////////////////////////////////////////
 // game variables
 
-const maxScenes = 11;
+const sceneCount = 12;
 const startScene = 0;
 export let spriteAtlas, groundObject, mouseJoint, repeatSpawnTimer = new LJS.Timer;
 const sound_click = new LJS.Sound([.2,.1,,,,.01,,,,,,,,,,,,,,,-500]);
@@ -125,7 +125,7 @@ function gameUpdate()
     {
         // change scene
         const upPressed = LJS.keyWasPressed('ArrowUp');
-        setScene(LJS.mod(Scenes.scene + (upPressed?1:-1), maxScenes));
+        setScene(LJS.mod(Scenes.scene + (upPressed?1:-1), sceneCount));
     }
 }
 

@@ -447,6 +447,80 @@ export class ClothObject extends LJS.Box2dStaticObject
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+
+// ragdoll with head, arms, and legs connected to torso by revolute joints
+export class RagdollObject extends LJS.Box2dObject
+{
+    constructor(pos, scale=1, color=LJS.randColor())
+    {
+        const headSize    = .8  * scale;
+        const torsoWidth  = 1.2 * scale;
+        const torsoHeight = 2   * scale;
+        const limbWidth   = .4  * scale;
+        const upperArmLen = 1   * scale;
+        const lowerArmLen = 1   * scale;
+        const upperLegLen = 1.1 * scale;
+        const lowerLegLen = 1.1 * scale;
+
+        // torso is the main body
+        super(pos, vec2(torsoWidth, torsoHeight), 0, 0, color);
+        this.addBox(vec2(torsoWidth, torsoHeight), vec2(), 0, density, friction, restitution);
+        this.limbs = [];
+
+        const addLimb = (offset, size, isCircle=false) =>
+        {
+            const o = new LJS.Box2dObject(pos.add(offset), size, 0, 0, color);
+            if (isCircle)
+                o.addCircle(size.x, vec2(), density, friction, restitution);
+            else
+                o.addBox(size, vec2(), 0, density, friction, restitution);
+            this.limbs.push(o);
+            return o;
+        };
+        const addJoint = (a, b, anchor, lower, upper) =>
+        {
+            const joint = new LJS.Box2dRevoluteJoint(a, b, anchor);
+            joint.enableLimit();
+            joint.setLimits(lower, upper);
+        };
+
+        // head
+        const head = addLimb(vec2(0, torsoHeight/2 + headSize/2 + .1*scale), vec2(headSize), true);
+        addJoint(this, head, pos.add(vec2(0, torsoHeight/2)), -.5, .5);
+
+        // arms
+        const shoulderY = torsoHeight/2 - .2*scale;
+        for (const side of [-1, 1])
+        {
+            const shoulder = pos.add(vec2(side*torsoWidth/2, shoulderY));
+            const upperArm = addLimb(vec2(side*(torsoWidth/2 + upperArmLen/2), shoulderY), vec2(upperArmLen, limbWidth));
+            addJoint(this, upperArm, shoulder, -2, 2);
+
+            const elbow = shoulder.add(vec2(side*upperArmLen, 0));
+            const lowerArm = addLimb(vec2(side*(torsoWidth/2 + upperArmLen + lowerArmLen/2), shoulderY), vec2(lowerArmLen, limbWidth));
+            addJoint(upperArm, lowerArm, elbow, -2.5, 2.5);
+        }
+
+        // legs
+        for (const side of [-1, 1])
+        {
+            const hip = pos.add(vec2(side*torsoWidth/4, -torsoHeight/2));
+            const upperLeg = addLimb(vec2(side*torsoWidth/4, -torsoHeight/2 - upperLegLen/2), vec2(limbWidth, upperLegLen));
+            addJoint(this, upperLeg, hip, -.5, 2.5);
+
+            const knee = hip.add(vec2(0, -upperLegLen));
+            const lowerLeg = addLimb(vec2(side*torsoWidth/4, -torsoHeight/2 - upperLegLen - lowerLegLen/2), vec2(limbWidth, lowerLegLen));
+            addJoint(upperLeg, lowerLeg, knee, -2.5, 2.5);
+        }
+    }
+    destroy()
+    {
+        this.limbs.forEach(o => o.destroy());
+        super.destroy();
+    }
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // Effects
 
 const sound_explosion = new LJS.Sound([.5,.2,72,.01,.01,.2,4,,,,,,,1,,.5,.1,.5,.02]);
