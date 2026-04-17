@@ -315,12 +315,17 @@ async function engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, game
         }
         else
         {
+            // apply device pixel ratio for crisp rendering
+            const dpr = canvasPixelRatio ?? (devicePixelRatio || 1);
+            const viewWidth = innerWidth * dpr | 0;
+            const viewHeight = innerHeight * dpr | 0;
+            
             // get main canvas size based on window size
-            mainCanvasSize.x = min(innerWidth,  canvasMaxSize.x);
-            mainCanvasSize.y = min(innerHeight, canvasMaxSize.y);
+            mainCanvasSize.x = min(viewWidth,  canvasMaxSize.x);
+            mainCanvasSize.y = min(viewHeight, canvasMaxSize.y);
             
             // responsive aspect ratio with native resolution
-            const innerAspect = innerWidth / innerHeight;
+            const innerAspect = viewWidth / viewHeight;
             ASSERT(canvasMinAspect <= canvasMaxAspect);
             if (canvasMaxAspect && innerAspect > canvasMaxAspect)
             {
@@ -333,6 +338,17 @@ async function engineInit(gameInit, gameUpdate, gameUpdatePost, gameRender, game
                 // full width
                 const h = mainCanvasSize.x / canvasMinAspect | 0;
                 mainCanvasSize.y = min(h, canvasMaxSize.y);
+            }
+
+            // set CSS display size so backing store renders at viewport size
+            const cssW = (mainCanvasSize.x / dpr | 0) + 'px';
+            const cssH = (mainCanvasSize.y / dpr | 0) + 'px';
+            mainCanvas.style.width  = cssW;
+            mainCanvas.style.height = cssH;
+            if (glCanvas)
+            {
+                glCanvas.style.width  = cssW;
+                glCanvas.style.height = cssH;
             }
         }
 
@@ -553,8 +569,9 @@ function drawEngineLogo(t)
 
     // LittleJS Logo and Splash Screen
     const x = mainContext;
-    const w = mainCanvas.width = innerWidth;
-    const h = mainCanvas.height = innerHeight;
+    const dpr = canvasPixelRatio ?? (devicePixelRatio || 1);
+    const w = mainCanvas.width = innerWidth * dpr;
+    const h = mainCanvas.height = innerHeight * dpr;
     {
         // background
         const p3 = percent(t, 1, .8);

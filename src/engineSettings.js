@@ -82,6 +82,13 @@ let canvasPixelated = false;
  *  @memberof Settings */
 let tilesPixelated = true;
 
+/** Scale factor applied to the canvas backing store for native-resolution rendering.
+ *  Pass 1 for no scaling, a number for an explicit ratio, or undefined to track devicePixelRatio each frame.
+ *  @type {number|undefined}
+ *  @default
+ *  @memberof Settings */
+let canvasPixelRatio = 1;
+
 /** Default font used for text rendering
  *  @type {string}
  *  @default
@@ -393,6 +400,12 @@ function setCanvasPixelated(pixelated)
  *  @param {boolean} pixelated
  *  @memberof Settings */
 function setTilesPixelated(pixelated) { tilesPixelated = pixelated; }
+
+/** Set the canvas pixel ratio.
+ *  Pass a number for an explicit ratio, or call with no argument to track devicePixelRatio each frame.
+ *  @param {number} [pixelRatio]
+ *  @memberof Settings */
+function setCanvasPixelRatio(pixelRatio) { canvasPixelRatio = pixelRatio; }
 
 /** Set default font used for text rendering
  *  @param {string} font
