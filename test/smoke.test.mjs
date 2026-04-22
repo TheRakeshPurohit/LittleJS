@@ -2,6 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
     EngineObject, ParticleEmitter, TileLayerData, TileInfo,
+    TileLayer, CanvasLayer, Medal,
     Timer, tile, vec2, rgb,
 } from '../dist/littlejs.esm.js';
 
@@ -126,4 +127,132 @@ test('Timer unset returns 0 from get/getPercent/getSetTime', () =>
     assert.equal(t.get(), 0);
     assert.equal(t.getPercent(), 0);
     assert.equal(t.getSetTime(), 0);
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// EngineObject methods
+
+test('EngineObject.setCollision applies each flag to the right slot', () =>
+{
+    // Asymmetric patterns: each of the four (collideSolidObjects, isSolid,
+    // collideTiles, collideRaycast) slots gets a different value from its
+    // neighbors, so any pairwise swap of assignments would show up.
+    const o = new EngineObject(vec2(0, 0), vec2(1, 1));
+    // pattern A: [T, F, T, F]
+    o.setCollision(true, false, true, false);
+    assert.equal(o.collideSolidObjects, true);
+    assert.equal(o.isSolid, false);
+    assert.equal(o.collideTiles, true);
+    assert.equal(o.collideRaycast, false);
+    // pattern B: [T, T, F, T] — flips everything from A (ASSERT requires collideSolidObjects||!isSolid)
+    o.setCollision(true, true, false, true);
+    assert.equal(o.collideSolidObjects, true);
+    assert.equal(o.isSolid, true);
+    assert.equal(o.collideTiles, false);
+    assert.equal(o.collideRaycast, true);
+    // defaults: all true
+    o.setCollision();
+    assert.equal(o.collideSolidObjects, true);
+    assert.equal(o.isSolid, true);
+    assert.equal(o.collideTiles, true);
+    assert.equal(o.collideRaycast, true);
+});
+
+test('EngineObject.addChild / removeChild maintain bidirectional links', () =>
+{
+    const parent = new EngineObject(vec2(0, 0), vec2(1, 1));
+    const child = new EngineObject(vec2(0, 0), vec2(1, 1));
+    const localPos = vec2(2, 3);
+    parent.addChild(child, localPos, 0.5);
+    assert.equal(child.parent, parent);
+    assert.deepEqual(parent.children, [child]);
+    assert.equal(child.localAngle, 0.5);
+    // localPos is stored as a copy — mutating the original doesn't affect the child
+    assert.equal(child.localPos.x, 2);
+    assert.equal(child.localPos.y, 3);
+    localPos.x = 999;
+    assert.equal(child.localPos.x, 2);
+    // removeChild clears parent and splices children
+    parent.removeChild(child);
+    assert.equal(child.parent, undefined);
+    assert.deepEqual(parent.children, []);
+});
+
+test('EngineObject.destroy is idempotent and cascades to children', () =>
+{
+    const parent = new EngineObject(vec2(0, 0), vec2(1, 1));
+    const childA = new EngineObject(vec2(0, 0), vec2(1, 1));
+    const childB = new EngineObject(vec2(0, 0), vec2(1, 1));
+    parent.addChild(childA);
+    parent.addChild(childB);
+    parent.destroy();
+    assert.equal(parent.destroyed, true);
+    // children cascade-destroyed
+    assert.equal(childA.destroyed, true);
+    assert.equal(childB.destroyed, true);
+    // children have parent cleared
+    assert.equal(childA.parent, undefined);
+    assert.equal(childB.parent, undefined);
+    // idempotent — second call is a no-op (no throw)
+    assert.doesNotThrow(() => parent.destroy());
+});
+
+test('EngineObject.destroy disconnects from parent', () =>
+{
+    const parent = new EngineObject(vec2(0, 0), vec2(1, 1));
+    const child = new EngineObject(vec2(0, 0), vec2(1, 1));
+    parent.addChild(child);
+    child.destroy();
+    assert.equal(child.destroyed, true);
+    assert.equal(child.parent, undefined);
+    assert.deepEqual(parent.children, []);           // parent's children array spliced
+});
+
+test('EngineObject.getAliveTime is 0 right after construction (time=0 in headless)', () =>
+{
+    const o = new EngineObject(vec2(0, 0), vec2(1, 1));
+    assert(near(o.getAliveTime(), 0));
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// Medal
+
+test('Medal construction sets fields and registers in medals[]', () =>
+{
+    const m = new Medal(100, 'Test Medal', 'A test medal', '🏆');
+    assert.equal(m.id, 100);
+    assert.equal(m.name, 'Test Medal');
+    assert.equal(m.description, 'A test medal');
+    assert.equal(m.icon, '🏆');
+    assert.equal(m.unlocked, false);
+});
+
+test('Medal description and icon default when omitted', () =>
+{
+    const m = new Medal(101, 'Defaults Medal');
+    assert.equal(m.description, '');
+    assert.equal(m.icon, '🏆');                      // default trophy
+    assert.equal(m.unlocked, false);
+});
+
+///////////////////////////////////////////////////////////////////////////////
+// CanvasLayer / TileLayer
+
+test('CanvasLayer extends EngineObject and has no canvas in headless', () =>
+{
+    const cl = new CanvasLayer(vec2(0, 0), vec2(10, 10), 0, 0, vec2(64), false);
+    assert(cl instanceof EngineObject);
+    assert(cl instanceof CanvasLayer);
+    assert.equal(cl.canvas, undefined);              // headless: no OffscreenCanvas created
+    assert.equal(cl.mass, 0);                        // physics disabled by default
+});
+
+test('TileLayer extends CanvasLayer and stubs render methods in headless', () =>
+{
+    const tl = new TileLayer(vec2(0, 0), vec2(4, 3), tile(0, 16), 0, false);
+    assert(tl instanceof CanvasLayer);
+    assert(tl instanceof TileLayer);
+    // in headless the render-family methods are replaced with no-op arrow functions
+    assert.doesNotThrow(() => tl.render());
+    assert.doesNotThrow(() => tl.redraw());
 });
