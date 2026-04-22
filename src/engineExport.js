@@ -168,10 +168,12 @@ export
     distanceAngle,
     lerpAngle,
     lerp,
+    percentLerp,
     smoothStep,
     nearestPowerOfTwo,
     isOverlapping,
     isIntersecting,
+    lineTest,
     oscillate,
 
     // Utilities
