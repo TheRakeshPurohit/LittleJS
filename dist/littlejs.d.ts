@@ -893,6 +893,16 @@ declare module "littlejsengine" {
      *  @return {number}
      *  @memberof Math */
     export function lerp(valueA: number, valueB: number, percent: number): number;
+    /** Gets percent between percentA and percentB and linearly interpolates between lerpA and lerpB
+     *  A shortcut for lerp(lerpA, lerpB, percent(value, percentA, percentB))
+     *  @param {number} value
+     *  @param {number} percentA
+     *  @param {number} percentB
+     *  @param {number} lerpA
+     *  @param {number} lerpB
+     *  @return {number}
+     *  @memberof Math */
+    export function percentLerp(value: number, percentA: number, percentB: number, lerpA: number, lerpB: number): number;
     /** Applies smoothstep function to the percentage value
      *  @param {number} percent
      *  @return {number}
@@ -920,6 +930,20 @@ declare module "littlejsengine" {
      *  @return {boolean}      - True if intersecting
      *  @memberof Math */
     export function isIntersecting(start: Vector2, end: Vector2, pos: Vector2, size: Vector2): boolean;
+    /**
+     * @callback LineTestFunction - Checks if a position is colliding
+     * @param {Vector2} pos
+     * @memberof Draw
+     */
+    /**
+     * Casts a ray and returns position of the first collision found, or undefined if none are found
+     * @param {Vector2} posStart
+     * @param {Vector2} posEnd
+     * @param {LineTestFunction} testFunction - Check if colliding
+     * @param {Vector2} [normal] - Optional vector to store the normal
+     * @return {Vector2|undefined} - Position of the collision or undefined if none found
+     * @memberof Math */
+    export function lineTest(posStart: Vector2, posEnd: Vector2, testFunction: LineTestFunction, normal?: Vector2): Vector2 | undefined;
     /** Returns an oscillating wave between 0 and amplitude with frequency of 1 Hz by default
      *  @param {number} [frequency] - Frequency of the wave in Hz
      *  @param {number} [amplitude] - Amplitude (max height) of the wave
