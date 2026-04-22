@@ -1,6 +1,6 @@
 # LittleJS - The Tiny Fast JavaScript Game Engine
 
-<div align='center'>
+<div align='center' markdown='1'>
     
 ![LittleJS Logo](examples/logo.png)
 
@@ -22,7 +22,7 @@ The code is very clean and well documented with many examples to get you started
 
 *The Third Annual LittleJS Game Jam will take place From Oct 2 to Nov 2! Unleash your creativity and develop amazing games using the LittleJS game engine. 🕹️🎮 [Sign up today and get more info about the jam on itch.io!](https://itch.io/jam/littlejs-jam)*
 
-<div align='center'>
+<div align='center' markdown='1'>
 
 ## [Demos](https://killedbyapixel.github.io/LittleJS/examples) | [Docs](https://killedbyapixel.github.io/LittleJS/docs) | [Trailer](https://youtu.be/chuBzGjv7Ms) | [Discord](https://discord.gg/zb7hcGkyZe) | [FAQ](https://github.com/KilledByAPixel/LittleJS/blob/main/FAQ.md)
 
