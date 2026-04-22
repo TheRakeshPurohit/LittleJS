@@ -155,6 +155,16 @@ drawEllipse(pos, size, color)           // filled ellipse
 npm run build
 ```
 
+### Testing
+```bash
+npm test
+```
+
+- Tests target `dist/littlejs.esm.js` — rebuild with `npm run build` after changing source.
+- [test/setup.mjs](test/setup.mjs) stubs minimal DOM and enables headless mode. Tests shouldn't call `engineInit`, `render()`, or assume `time` advances.
+- Zero test dependencies — uses Node's built-in `node --test`. Match the style in [test/](test/) when adding new ones.
+- CI runs build + test on every push/PR ([.github/workflows/test.yml](.github/workflows/test.yml)).
+
 ### Debug features
 - Press `Esc` to toggle debug overlay
 - Number keys toggle visualizations
