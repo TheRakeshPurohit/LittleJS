@@ -230,18 +230,22 @@ let touchInputEnable = true;
 
 /** True if touch gamepad should appear on mobile devices
  *  - Supports left analog stick, 4 face buttons and start button (button 9)
+ *  - setTouchGamepadButtonCount(1) to use face buttons as right analog stick
+ *  - Analog stick buttons 10 and 11 are also activated when virtual sticks are touched
+
  *  @type {boolean}
  *  @default
  *  @memberof Settings */
 let touchGamepadEnable = false;
 
 /** True if touch gamepad should have start button in the center
+ *  - Prevents activating if overlappng with virtual stick or buttons if they are enabled
  *  - When the game is paused, any touch will press the button
- *  - This can function as a way to pause/unpause the game
- *  @type {boolean}
+ *  - Set size to enable the center button
+ *  @type {number}
  *  @default
  *  @memberof Settings */
-let touchGamepadCenterButton = true;
+let touchGamepadCenterButtonSize = 300;
 
 /** Number of buttons on touch gamepad (0-4), if 1 also acts as right analog stick
  *  @type {number}
@@ -259,7 +263,7 @@ let touchGamepadAnalog = true;
  *  @type {number}
  *  @default
  *  @memberof Settings */
-let touchGamepadSize = 99;
+let touchGamepadSize = 100;
 
 /** Transparency of touch gamepad overlay
  *  @type {number}
@@ -527,11 +531,12 @@ function setTouchInputEnable(enable) { touchInputEnable = enable; }
  *  @memberof Settings */
 function setTouchGamepadEnable(enable) { touchGamepadEnable = enable; }
 
-/** True if touch gamepad should have start button in the center
- *  - This can function as a way to pause/unpause the game
- *  @param {boolean} enable
+/** Set if touch gamepad should have start button in the center
+ *  - Set size to enable the center button
+ *  - When the game is paused, any touch will press the button
+ *  @param {number} size
  *  @memberof Settings */
-function setTouchGamepadCenterButton(enable) { touchGamepadCenterButton = enable; }
+function setTouchGamepadCenterButtonSize(size) { touchGamepadCenterButtonSize = size; }
 
 /** Set number of buttons on touch gamepad (0-4), if 1 also acts as right analog stick
  *  @param {number} count

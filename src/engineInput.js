@@ -497,7 +497,7 @@ function inputInit()
             if (touching)
             {
                 touchGamepadTimer.set();
-                if (touchGamepadCenterButton && !wasTouching && paused)
+                if (touchGamepadCenterButtonSize && !wasTouching && paused)
                 {
                     // touch anywhere to press start when paused
                     touchGamepadButtons[9] = 1;
@@ -522,6 +522,7 @@ function inputInit()
                     // virtual analog stick
                     const delta = touchPos.subtract(stickCenter);
                     touchGamepadSticks[0] = delta.scale(2/touchGamepadSize).clampLength();
+                    touchGamepadButtons[10] = 1; // also press a button when touching stick
                 }
                 else if (buttonCenter.distance(touchPos) < touchGamepadSize)
                 {
@@ -530,6 +531,7 @@ function inputInit()
                         // virtual right analog stick
                         const delta = touchPos.subtract(buttonCenter);
                         touchGamepadSticks[1] = delta.scale(2/touchGamepadSize).clampLength();
+                        touchGamepadButtons[11] = 1; // also press a button when touching right stick
                     }
                     // virtual face buttons
                     let button = buttonCenter.subtract(touchPos).direction();
@@ -546,8 +548,7 @@ function inputInit()
                     if (button < touchGamepadButtonCount)
                         touchGamepadButtons[button] = 1;
                 }
-                else if (touchGamepadCenterButton && 
-                    startCenter.distance(touchPos) < touchGamepadSize)
+                else if (startCenter.distance(touchPos) < touchGamepadCenterButtonSize)
                 {
                     // virtual start button in center
                     touchGamepadButtons[9] = 1;
@@ -604,8 +605,8 @@ function inputUpdate()
 
                 debugCircle(stickCenter, 2*touchGamepadSize, 'cyan', 0, false, true);
                 debugCircle(buttonCenter, 2*touchGamepadSize, 'cyan', 0, false, true);
-                if (touchGamepadCenterSize)
-                    debugCircle(startCenter, 2*touchGamepadCenterSize, 'cyan', 0, false, true);
+                if (touchGamepadCenterButtonSize)
+                    debugCircle(startCenter, 2*touchGamepadCenterButtonSize, 'cyan', 0, false, true);
             }
 
             if (!touchGamepadTimer.isSet()) return;
@@ -635,7 +636,7 @@ function inputUpdate()
 
             // read virtual gamepad buttons
             const data = inputData[1] ?? (inputData[1] = []);
-            for (let i=10; i--;)
+            for (let i=12; i--;)
             {
                 const wasDown = gamepadIsDown(i,0);
                 data[i] = touchGamepadButtons[i] ? wasDown ? 1 : 3 : wasDown ? 4 : 0;
