@@ -596,6 +596,18 @@ function inputUpdate()
         // update touch gamepad if enabled
         if (touchGamepadEnable && isTouchDevice)
         {
+            if (debugGamepads)
+            {
+                const stickCenter = vec2(touchGamepadSize, mainCanvasSize.y-touchGamepadSize);
+                const buttonCenter = touchGamepadButtonCenter();
+                const startCenter = mainCanvasSize.scale(.5);
+
+                debugCircle(stickCenter, 2*touchGamepadSize, 'cyan', 0, false, true);
+                debugCircle(buttonCenter, 2*touchGamepadSize, 'cyan', 0, false, true);
+                if (touchGamepadCenterSize)
+                    debugCircle(startCenter, 2*touchGamepadCenterSize, 'cyan', 0, false, true);
+            }
+
             if (!touchGamepadTimer.isSet()) return;
 
             // read virtual analog stick
