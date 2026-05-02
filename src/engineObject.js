@@ -452,6 +452,7 @@ class EngineObject
         child.parent = this;
         child.localPos = localPos.copy();
         child.localAngle = localAngle;
+        child.updateTransforms();
         return child;
     }
 
