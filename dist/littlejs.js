@@ -35,7 +35,7 @@ const engineName = 'LittleJS';
  *  @type {string}
  *  @default
  *  @memberof Engine */
-const engineVersion = '1.18.1';
+const engineVersion = '1.18.2';
 
 /** Frames per second to update
  *  @type {number}
@@ -3003,18 +3003,22 @@ let touchInputEnable = true;
 
 /** True if touch gamepad should appear on mobile devices
  *  - Supports left analog stick, 4 face buttons and start button (button 9)
+ *  - setTouchGamepadButtonCount(1) to use face buttons as right analog stick
+ *  - Analog stick buttons 10 and 11 are also activated when virtual sticks are touched
+
  *  @type {boolean}
  *  @default
  *  @memberof Settings */
 let touchGamepadEnable = false;
 
 /** True if touch gamepad should have start button in the center
+ *  - Prevents activating if overlappng with virtual stick or buttons if they are enabled
  *  - When the game is paused, any touch will press the button
- *  - This can function as a way to pause/unpause the game
- *  @type {boolean}
+ *  - Set size to enable the center button
+ *  @type {number}
  *  @default
  *  @memberof Settings */
-let touchGamepadCenterButton = true;
+let touchGamepadCenterButtonSize = 300;
 
 /** Number of buttons on touch gamepad (0-4), if 1 also acts as right analog stick
  *  @type {number}
@@ -3032,7 +3036,7 @@ let touchGamepadAnalog = true;
  *  @type {number}
  *  @default
  *  @memberof Settings */
-let touchGamepadSize = 99;
+let touchGamepadSize = 100;
 
 /** Transparency of touch gamepad overlay
  *  @type {number}
@@ -3300,11 +3304,12 @@ function setTouchInputEnable(enable) { touchInputEnable = enable; }
  *  @memberof Settings */
 function setTouchGamepadEnable(enable) { touchGamepadEnable = enable; }
 
-/** True if touch gamepad should have start button in the center
- *  - This can function as a way to pause/unpause the game
- *  @param {boolean} enable
+/** Set if touch gamepad should have start button in the center
+ *  - Set size to enable the center button
+ *  - When the game is paused, any touch will press the button
+ *  @param {number} size
  *  @memberof Settings */
-function setTouchGamepadCenterButton(enable) { touchGamepadCenterButton = enable; }
+function setTouchGamepadCenterButtonSize(size) { touchGamepadCenterButtonSize = size; }
 
 /** Set number of buttons on touch gamepad (0-4), if 1 also acts as right analog stick
  *  @param {number} count
@@ -3842,6 +3847,7 @@ class EngineObject
         child.parent = this;
         child.localPos = localPos.copy();
         child.localAngle = localAngle;
+        child.updateTransforms();
         return child;
     }
 
@@ -5573,7 +5579,7 @@ function inputInit()
             if (touching)
             {
                 touchGamepadTimer.set();
-                if (touchGamepadCenterButton && !wasTouching && paused)
+                if (touchGamepadCenterButtonSize && !wasTouching && paused)
                 {
                     // touch anywhere to press start when paused
                     touchGamepadButtons[9] = 1;
@@ -5598,6 +5604,7 @@ function inputInit()
                     // virtual analog stick
                     const delta = touchPos.subtract(stickCenter);
                     touchGamepadSticks[0] = delta.scale(2/touchGamepadSize).clampLength();
+                    touchGamepadButtons[10] = 1; // also press a button when touching stick
                 }
                 else if (buttonCenter.distance(touchPos) < touchGamepadSize)
                 {
@@ -5606,6 +5613,7 @@ function inputInit()
                         // virtual right analog stick
                         const delta = touchPos.subtract(buttonCenter);
                         touchGamepadSticks[1] = delta.scale(2/touchGamepadSize).clampLength();
+                        touchGamepadButtons[11] = 1; // also press a button when touching right stick
                     }
                     // virtual face buttons
                     let button = buttonCenter.subtract(touchPos).direction();
@@ -5622,8 +5630,7 @@ function inputInit()
                     if (button < touchGamepadButtonCount)
                         touchGamepadButtons[button] = 1;
                 }
-                else if (touchGamepadCenterButton && 
-                    startCenter.distance(touchPos) < touchGamepadSize)
+                else if (startCenter.distance(touchPos) < touchGamepadCenterButtonSize)
                 {
                     // virtual start button in center
                     touchGamepadButtons[9] = 1;
@@ -5672,6 +5679,18 @@ function inputUpdate()
         // update touch gamepad if enabled
         if (touchGamepadEnable && isTouchDevice)
         {
+            if (debugGamepads)
+            {
+                const stickCenter = vec2(touchGamepadSize, mainCanvasSize.y-touchGamepadSize);
+                const buttonCenter = touchGamepadButtonCenter();
+                const startCenter = mainCanvasSize.scale(.5);
+
+                debugCircle(stickCenter, 2*touchGamepadSize, 'cyan', 0, false, true);
+                debugCircle(buttonCenter, 2*touchGamepadSize, 'cyan', 0, false, true);
+                if (touchGamepadCenterButtonSize)
+                    debugCircle(startCenter, 2*touchGamepadCenterButtonSize, 'cyan', 0, false, true);
+            }
+
             if (!touchGamepadTimer.isSet()) return;
 
             // read virtual analog stick
@@ -5699,7 +5718,7 @@ function inputUpdate()
 
             // read virtual gamepad buttons
             const data = inputData[1] ?? (inputData[1] = []);
-            for (let i=10; i--;)
+            for (let i=12; i--;)
             {
                 const wasDown = gamepadIsDown(i,0);
                 data[i] = touchGamepadButtons[i] ? wasDown ? 1 : 3 : wasDown ? 4 : 0;

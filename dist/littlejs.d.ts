@@ -480,17 +480,21 @@ declare module "littlejsengine" {
     export let inputWASDEmulateDirection: boolean;
     /** True if touch gamepad should appear on mobile devices
      *  - Supports left analog stick, 4 face buttons and start button (button 9)
+     *  - setTouchGamepadButtonCount(1) to use face buttons as right analog stick
+     *  - Analog stick buttons 10 and 11 are also activated when virtual sticks are touched
+    
      *  @type {boolean}
      *  @default
      *  @memberof Settings */
     export let touchGamepadEnable: boolean;
     /** True if touch gamepad should have start button in the center
+     *  - Prevents activating if overlappng with virtual stick or buttons if they are enabled
      *  - When the game is paused, any touch will press the button
-     *  - This can function as a way to pause/unpause the game
-     *  @type {boolean}
+     *  - Set size to enable the center button
+     *  @type {number}
      *  @default
      *  @memberof Settings */
-    export let touchGamepadCenterButton: boolean;
+    export let touchGamepadCenterButtonSize: number;
     /** True if touch gamepad should be analog stick or false to use if 8 way dpad
      *  @type {boolean}
      *  @default
@@ -687,11 +691,12 @@ declare module "littlejsengine" {
      *  @param {boolean} enable
      *  @memberof Settings */
     export function setTouchGamepadEnable(enable: boolean): void;
-    /** True if touch gamepad should have start button in the center
-     *  - This can function as a way to pause/unpause the game
-     *  @param {boolean} enable
+    /** Set if touch gamepad should have start button in the center
+     *  - Set size to enable the center button
+     *  - When the game is paused, any touch will press the button
+     *  @param {number} size
      *  @memberof Settings */
-    export function setTouchGamepadCenterButton(enable: boolean): void;
+    export function setTouchGamepadCenterButtonSize(size: number): void;
     /** Set number of buttons on touch gamepad (0-4), if 1 also acts as right analog stick
      *  @param {number} count
      *  @memberof Settings */
